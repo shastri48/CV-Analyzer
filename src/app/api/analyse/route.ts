@@ -4,10 +4,6 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { AnalysisResult } from '@/types';
 
-// Use dynamic import for pdf-parse to handle module compatibility
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
-
 // Initialize clients (will use env vars when available)
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -23,6 +19,9 @@ async function extractText(file: File): Promise<string> {
   const fileName = file.name.toLowerCase();
 
   if (fileName.endsWith('.pdf')) {
+    // Dynamic import for pdf-parse to handle module compatibility
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pdfParse = (await import('pdf-parse')) as any;
     const data = await pdfParse(buffer);
     return data.text;
   } else if (fileName.endsWith('.docx')) {
@@ -52,7 +51,15 @@ async function analyzeWithChatGPT(resumeText: string): Promise<AnalysisResult> {
   "atsCheck": {
     "formatting": "<detailed formatting assessment>",
     "suggestions": [<array of improvement suggestions>]
-  }
+  },
+  "sections": [
+    {
+      "sectionName": "<section name>",
+      "content": "<brief summary of content>",
+      "strengths": [<array of strengths>],
+      "improvements": [<array of improvements>]
+    }
+  ]
 }
 
 Resume:
@@ -62,7 +69,8 @@ Provide a thorough analysis focusing on:
 1. Overall resume quality and completeness (score)
 2. Industry-relevant keywords that are missing or should be added
 3. ATS compatibility - formatting, structure, and readability
-4. Specific actionable suggestions for improvement`;
+4. Section-by-section analysis with specific strengths and improvements
+5. Specific actionable suggestions for improvement`;
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
@@ -100,7 +108,15 @@ async function analyzeWithClaude(resumeText: string): Promise<AnalysisResult> {
   "atsCheck": {
     "formatting": "<detailed formatting assessment>",
     "suggestions": [<array of improvement suggestions>]
-  }
+  },
+  "sections": [
+    {
+      "sectionName": "<section name>",
+      "content": "<brief summary of content>",
+      "strengths": [<array of strengths>],
+      "improvements": [<array of improvements>]
+    }
+  ]
 }
 
 Resume:
@@ -110,7 +126,8 @@ Provide a thorough analysis focusing on:
 1. Overall resume quality and completeness (score)
 2. Industry-relevant keywords that are missing or should be added
 3. ATS compatibility - formatting, structure, and readability
-4. Specific actionable suggestions for improvement`;
+4. Section-by-section analysis with specific strengths and improvements
+5. Specific actionable suggestions for improvement`;
 
   const response = await anthropic.messages.create({
     model: 'claude-3-5-sonnet-20241022',
@@ -154,6 +171,32 @@ function generateMockAnalysis(): AnalysisResult {
         'Keep the formatting simple and consistent throughout',
       ],
     },
+    sections: [
+      {
+        sectionName: 'Summary/Objective',
+        content: 'Professional summary section',
+        strengths: ['Clear career goals', 'Relevant experience highlighted'],
+        improvements: ['Add more specific achievements', 'Quantify your impact with metrics'],
+      },
+      {
+        sectionName: 'Work Experience',
+        content: 'Employment history and responsibilities',
+        strengths: ['Chronological order maintained', 'Job titles are clear'],
+        improvements: ['Use action verbs to start bullet points', 'Include more quantifiable results'],
+      },
+      {
+        sectionName: 'Education',
+        content: 'Educational background',
+        strengths: ['Proper formatting', 'Relevant degrees listed'],
+        improvements: ['Consider adding relevant coursework or certifications'],
+      },
+      {
+        sectionName: 'Skills',
+        content: 'Technical and soft skills',
+        strengths: ['Good variety of skills listed'],
+        improvements: ['Organize skills by category', 'Add proficiency levels'],
+      },
+    ],
   };
 }
 

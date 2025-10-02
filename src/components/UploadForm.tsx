@@ -1,17 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { ModelOption } from '@/types';
 
 interface UploadFormProps {
-  onSubmit: (file: File, model: string) => Promise<void>;
+  onSubmit: (file: File) => Promise<void>;
   isLoading: boolean;
 }
-
-const modelOptions: ModelOption[] = [
-  { value: 'chatgpt', label: 'ChatGPT (GPT-4)' },
-  { value: 'claude', label: 'Claude (Anthropic)' },
-];
 
 export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -50,9 +44,9 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
       // Create a text file from the input
       const blob = new Blob([resumeText], { type: 'text/plain' });
       const textFile = new File([blob], 'resume.txt', { type: 'text/plain' });
-      await onSubmit(textFile, 'claude'); // Always use Claude
+      await onSubmit(textFile);
     } else if (file) {
-      await onSubmit(file, 'claude'); // Always use Claude
+      await onSubmit(file);
     }
   };
 

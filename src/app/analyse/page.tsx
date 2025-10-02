@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import UploadForm from '@/components/UploadForm';
 import ResultCard from '@/components/ResultCard';
 import ApiKeyInput from '@/components/ApiKeyInput';
@@ -56,17 +56,17 @@ export default function AnalysePage() {
       }
       
       return result;
-    } catch (error) {
+    } catch (err) {
       // Provide more specific error message
-      if (error instanceof Error) {
-        if (error.message.includes('Invalid PDF')) {
+      if (err instanceof Error) {
+        if (err.message.includes('Invalid PDF')) {
           throw new Error('The PDF file appears to be corrupted or in an unsupported format.');
-        } else if (error.message.includes('password')) {
+        } else if (err.message.includes('password')) {
           throw new Error('The PDF is password-protected. Please provide an unprotected version.');
-        } else if (error.message.includes('empty')) {
+        } else if (err.message.includes('empty')) {
           throw new Error('No text could be extracted from the PDF. It may be an image-based PDF.');
         } else {
-          throw new Error(`PDF extraction failed: ${error.message}. Try converting to DOCX or TXT format.`);
+          throw new Error(`PDF extraction failed: ${err.message}. Try converting to DOCX or TXT format.`);
         }
       }
       
@@ -82,7 +82,7 @@ export default function AnalysePage() {
       const arrayBuffer = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer });
       return result.value.trim();
-    } catch (error) {
+    } catch {
       throw new Error('Failed to extract text from DOCX file.');
     }
   };
@@ -246,7 +246,7 @@ Analyze these aspects:
     };
   };
 
-  const handleFileSubmit = async (file: File, model: string) => {
+  const handleFileSubmit = async (file: File) => {
     setIsLoading(true);
     setError(null);
     setResult(null);
